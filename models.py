@@ -25,8 +25,11 @@ class Transformer(nn.Module):
         # Turn from patch to embedding matrix
         x = self.embedding(patches)
 
-        x += self.positional_encoding()
-
+        # Positional encoding
+        device = x.device
+        pos_ids = torch.arange(self.num_patches, device=device).unsqueeze(0).expand(batch_size, -1)
+        x = x + self.positional_encoding(pos_ids)
+        
         # Pass through the encoder
         for i in range(self.num_layers):
             x = self.encoding_layers[i](x)
