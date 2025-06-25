@@ -26,7 +26,7 @@ class Trainer:
 
                 self.optimizer.zero_grad()
 
-                output = self.model(data).to(self.device)
+                output = self.model(data)
 
                 # Compute the loss
                 loss = self.loss_function(output, target)

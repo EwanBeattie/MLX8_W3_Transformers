@@ -7,13 +7,13 @@ import torch
 
 class Controller():
     def __init__(self):
+        torch.manual_seed(42)
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
         train_loader, test_loader = data.get_mnist_data(batch_size=config['batch_size'])
-        self.model = Transformer(num_patches=config['num_patches'], patch_dim=7, embedding_size=config['embedding_size'], num_layers=config['num_layers'])
+        self.model = Transformer(num_patches=config['num_patches'], patch_dim=7, embedding_size=config['embedding_size'], num_layers=config['num_layers']).to(self.device)
         self.train_loader = train_loader
         self.test_loader = test_loader
-
-        torch.manual_seed(42)
-
 
     def train_model(self):
         # Initialise the trainer
