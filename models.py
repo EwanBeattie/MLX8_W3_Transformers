@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+from config import config
 
 class Transformer(nn.Module):
     def __init__(self, num_patches, patch_dim, embedding_size, num_layers):
@@ -10,6 +11,7 @@ class Transformer(nn.Module):
         self.patch_dim = patch_dim
 
         self.embedding = nn.Linear(patch_dim**2, embedding_size)
+        self.positional_encoding = nn.Embedding(num_patches, embedding_size)
         self.encoding_layers = nn.ModuleList([Encoder(embedding_size) for _ in range(num_layers)])
         self.classifier = nn.Linear(embedding_size, 10)
 
@@ -22,6 +24,8 @@ class Transformer(nn.Module):
 
         # Turn from patch to embedding matrix
         x = self.embedding(patches)
+
+        x += self.positional_encoding()
 
         # Pass through the encoder
         for i in range(self.num_layers):
@@ -40,7 +44,7 @@ class Encoder(nn.Module):
     def __init__(self, embedding_size):
         super().__init__()
         self.embedding_size = embedding_size
-        self.attention = AttentionLayer(self.embedding_size, key_query_size=24, value_size=32)
+        self.attention = AttentionLayer(self.embedding_size, key_query_size=config['key_query_size'], value_size=config['value_size'])
         self.mlp = MLPLayer(self.embedding_size)
 
     def forward(self, x):
@@ -59,11 +63,9 @@ class AttentionLayer(nn.Module):
         self.weights = nn.Linear(value_size, embedding_size)
         self.drop = torch.nn.Dropout(0.1)
 
-        
 
     def forward(self, embedding_matrix):
         # Embedding matrix is of shape (batch_size, num_patches, embedding_size)
-
 
         # Multiply E (embedding matrix) with W_query to get Q
         Q = self.query(embedding_matrix)
