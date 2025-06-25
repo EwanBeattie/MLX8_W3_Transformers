@@ -10,10 +10,19 @@ class Controller():
     def __init__(self):
         torch.manual_seed(42)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
         train_loader, test_loader = data.get_mnist_data(batch_size=config['batch_size'])
-        patch_dim = int(28 / sqrt(config['num_patches']))
-        self.model = Transformer(num_patches=config['num_patches'], 
+
+        self.num_patches = config['num_patches']
+        image_dim = 28
+        if int(sqrt(self.num_patches)) ** 2 != self.num_patches:
+            raise ValueError("num_patches must be a perfect square.")
+        
+        if image_dim % int(sqrt(self.num_patches)) != 0:
+            raise ValueError("Number of patches must be a perfect square that divides the image dimension evenly.")
+
+        patch_dim = int(28 / sqrt(self.num_patches))
+
+        self.model = Transformer(num_patches=self.num_patches, 
                                  patch_dim=patch_dim, 
                                  embedding_size=config['embedding_size'], 
                                  num_layers=config['num_layers'])

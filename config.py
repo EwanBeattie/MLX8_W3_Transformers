@@ -5,5 +5,5 @@ config = {
     'embedding_size': 64,
     'num_layers': 1,
     'dropout': 0.1,
-    'num_patches': 4,
+    'num_patches': 16,
 }
