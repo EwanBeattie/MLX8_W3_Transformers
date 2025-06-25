@@ -6,8 +6,6 @@ from configs import hyperparameters, run_config, sweep_config
 import wandb
 import torch.nn as nn
 
-
-
 def main():
 
     torch.manual_seed(42)
@@ -96,6 +94,7 @@ def test(model, test_loader, device):
             total += target.size(0)
     accuracy = correct / total
     print(f"Test Accuracy: {accuracy:.4f}")
+    wandb.log({"test_accuracy": accuracy})
 
 # def main():
 #     torch.manual_seed(42)
