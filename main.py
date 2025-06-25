@@ -13,12 +13,11 @@ class Controller():
         self.test_loader = test_loader
 
         torch.manual_seed(42)
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
     def train_model(self):
         # Initialise the trainer
-        trainer = Trainer(self.model, self.train_loader, self.test_loader).to(self.device)
+        trainer = Trainer(self.model, self.train_loader, self.test_loader)
 
         # Run the trainer
         trainer.train()

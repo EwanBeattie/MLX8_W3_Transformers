@@ -23,10 +23,10 @@ class Trainer:
             for batch_index, (data, target) in enumerate(self.train_loader):
                 data =  data.to(self.device)
                 target = target.to(self.device)
-                
+
                 self.optimizer.zero_grad()
 
-                output = self.model(data)
+                output = self.model(data).to(self.device)
 
                 # Compute the loss
                 loss = self.loss_function(output, target)
