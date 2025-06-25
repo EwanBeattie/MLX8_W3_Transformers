@@ -1,7 +1,7 @@
 import data
 from models import Transformer
-from trainer import Trainer
-from config import config
+from a_redundant.trainer import Trainer
+from configs import hyperparameters
 import torch
 from math import sqrt
 
@@ -10,9 +10,9 @@ class Controller():
     def __init__(self):
         torch.manual_seed(42)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        train_loader, test_loader = data.get_mnist_data(batch_size=config['batch_size'])
+        train_loader, test_loader = data.get_mnist_data(batch_size=hyperparameters['batch_size'])
 
-        self.num_patches = config['num_patches']
+        self.num_patches = hyperparameters['num_patches']
         image_dim = 28
         if int(sqrt(self.num_patches)) ** 2 != self.num_patches:
             raise ValueError("num_patches must be a perfect square.")
@@ -24,8 +24,8 @@ class Controller():
 
         self.model = Transformer(num_patches=self.num_patches, 
                                  patch_dim=patch_dim, 
-                                 embedding_size=config['embedding_size'], 
-                                 num_layers=config['num_layers'])
+                                 embedding_size=hyperparameters['embedding_size'], 
+                                 num_layers=hyperparameters['num_layers'])
         
         self.model.to(self.device)
         self.train_loader = train_loader

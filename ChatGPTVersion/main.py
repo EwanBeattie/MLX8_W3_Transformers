@@ -1,18 +1,18 @@
 import torch
 from data import get_mnist_data
 from models import SimpleTransformerEncoder
-from trainer import Trainer
-from config import config
+from a_redundant.trainer import Trainer
+from configs import hyperparameters
 
 def main():
-    train_loader, test_loader = get_mnist_data(batch_size=config['batch_size'])
+    train_loader, test_loader = get_mnist_data(batch_size=hyperparameters['batch_size'])
     model = SimpleTransformerEncoder(
-        embed_dim=config['embed_dim'],
-        num_heads=config['num_heads'],
-        num_layers=config['num_layers'],
-        dropout=config['dropout']
+        embed_dim=hyperparameters['embed_dim'],
+        num_heads=hyperparameters['num_heads'],
+        num_layers=hyperparameters['num_layers'],
+        dropout=hyperparameters['dropout']
     )
-    trainer = Trainer(model, train_loader, test_loader, config)
+    trainer = Trainer(model, train_loader, test_loader, hyperparameters)
     trainer.train()
     trainer.evaluate()
 

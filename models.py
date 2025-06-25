@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-from config import config
+from configs import hyperparameters
 
 class Transformer(nn.Module):
     def __init__(self, num_patches, patch_dim, embedding_size, num_layers):
@@ -26,10 +26,11 @@ class Transformer(nn.Module):
         x = self.embedding(patches)
 
         # Positional encoding
-        device = x.device
-        pos_ids = torch.arange(self.num_patches, device=device).unsqueeze(0).expand(batch_size, -1)
-        x = x + self.positional_encoding(pos_ids)
-        
+        if hyperparameters['use_pos_encoding']:
+            device = x.device
+            pos_ids = torch.arange(self.num_patches, device=device).unsqueeze(0).expand(batch_size, -1)
+            x = x + self.positional_encoding(pos_ids)
+
         # Pass through the encoder
         for i in range(self.num_layers):
             x = self.encoding_layers[i](x)
@@ -47,7 +48,7 @@ class Encoder(nn.Module):
     def __init__(self, embedding_size):
         super().__init__()
         self.embedding_size = embedding_size
-        self.attention = AttentionLayer(self.embedding_size, key_query_size=config['key_query_size'], value_size=config['value_size'])
+        self.attention = AttentionLayer(self.embedding_size, key_query_size=hyperparameters['key_query_size'], value_size=hyperparameters['value_size'])
         self.mlp = MLPLayer(self.embedding_size)
 
     def forward(self, x):
