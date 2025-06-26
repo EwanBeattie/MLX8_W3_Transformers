@@ -88,6 +88,7 @@ def test(model, test_loader, device):
         for data_batch, target in test_loader:
             data_batch = data_batch.to(device)
             target = target.to(device)
+            
             output = model(data_batch)
             _, predicted = output.max(1)
             correct += (predicted == target).sum().item()

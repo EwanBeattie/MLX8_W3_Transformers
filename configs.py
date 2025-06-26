@@ -15,16 +15,16 @@ sweep_config = {
     "method": "bayes", # Can be 'grid', 'random', or 'bayes'
     "metric": {"name": "test_accuracy", "goal": "maximize"},
     "parameters": {
-        "batch_size": {"values": [32, 64, 128]},
+        "batch_size": {"values": [64]},
         "learning_rate": {"values": [1e-3]},
-        "epochs": {"values": [5, 10, 15, 25]},
-        "embedding_size": {"values": [24, 32, 64, 128]},
-        "key_query_size": {"values": [24, 32, 64]},
-        "value_size": {"values": [24, 32, 64]},
-        "num_layers": {"values": [2, 5, 10]},
+        "epochs": {"values": [10]},
+        "embedding_size": {"values": [1, 5, 24]},
+        "key_query_size": {"values": [24, 64]},
+        "value_size": {"values": [24, 64]},
+        "num_layers": {"values": [2, 5]},
         "dropout": {"values": [0.1]},
-        "num_patches": {"values": [1, 4, 16]},
-        "use_pos_encoding": {"values": [True, False]},
+        "num_patches": {"values": [1]},
+        "use_pos_encoding": {"values": [False]},
     },
 }
 
