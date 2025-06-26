@@ -31,5 +31,5 @@ sweep_config = {
 run_config = {
     "project": "mlx8-week-03-transformers",
     "entity": "ewanbeattie1-n-a",
-    'run_type': 'sweep',  # 'sweep', 'train' or 'test
+    'run_type': 'train',  # 'sweep', 'train' or 'test
 }

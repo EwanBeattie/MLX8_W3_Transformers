@@ -5,6 +5,7 @@ from models import Transformer
 from configs import hyperparameters, run_config, sweep_config
 import wandb
 import torch.nn as nn
+from tqdm import tqdm
 
 def main():
 
@@ -56,7 +57,8 @@ def train(config=None):
 
     model.train()
     for epoch in range(config.epochs):
-        for batch_index, (data_batch, target) in enumerate(train_loader):
+        loop = tqdm(enumerate(train_loader), total=len(train_loader), desc=f"Epoch {epoch+1}/{config.epochs}")
+        for batch_index, (data_batch, target) in loop:
             data_batch = data_batch.to(device)
             target = target.to(device)
 
@@ -69,7 +71,7 @@ def train(config=None):
             if batch_index % 100 == 0:
                 print(f'Epoch: {epoch + 1}, Batch: {batch_index}, Loss: {loss.item():.2f}')
                 wandb.log({'loss': loss.item()})
-
+            loop.set_postfix(loss=loss.item())
 
     test(model, test_loader, device)
 
@@ -85,7 +87,7 @@ def test(model, test_loader, device):
     correct = 0
     total = 0
     with torch.no_grad():
-        for data_batch, target in test_loader:
+        for data_batch, target in tqdm(test_loader, desc="Testing", total=len(test_loader)):
             data_batch = data_batch.to(device)
             target = target.to(device)
 
