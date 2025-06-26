@@ -68,8 +68,8 @@ def train(config=None):
 
             if batch_index % 100 == 0:
                 print(f'Epoch: {epoch + 1}, Batch: {batch_index}, Loss: {loss.item():.2f}')
+                wandb.log({'loss': loss.item()})
 
-            wandb.log({'loss': loss.item()})
 
     test(model, test_loader, device)
 

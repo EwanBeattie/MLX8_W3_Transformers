@@ -3,3 +3,5 @@ torch
 torchvision
 matplotlib
 wandb
+streamlit
+streamlit_drawable_canvas

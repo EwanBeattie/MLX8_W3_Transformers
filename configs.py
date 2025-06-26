@@ -1,14 +1,14 @@
 hyperparameters = {
     'batch_size': 64,
     'learning_rate': 0.001,
-    'epochs': 1,
-    'embedding_size': 64,
+    'epochs': 10,
+    'embedding_size': 24,
     'key_query_size': 24,
-    'value_size': 32,
-    'num_layers': 1,
+    'value_size': 24,
+    'num_layers': 2,
     'dropout': 0.1,
     'num_patches': 1,
-    'use_pos_encoding': True,
+    'use_pos_encoding': False,
 }
 
 sweep_config = {
