@@ -1,0 +1,313 @@
+
+
+# class MNISTCaptionDataset(torch.utils.data.Dataset):
+#     def __init__(self, mnist_data, sp_model):
+#         self.data = mnist_data  # image-label pairs
+#         self.sp = sp_model      # SentencePiece processor
+
+#     def __len__(self):
+#         return len(self.data)
+
+#     def __getitem__(self, idx):
+#         image, label = self.data[idx]
+
+#         # 📝 1. Make caption string from label
+#         caption = f"This is a {label}"
+
+#         # 🔡 2. Tokenize
+#         tokens = self.sp.encode(caption, out_type=int)
+
+#         # 🎯 3. Make decoder inputs/labels
+#         caption_input = [self.sp.bos_id()] + tokens
+#         caption_label = tokens + [self.sp.eos_id()]
+
+#         return image, caption_input, caption_label
+
+
+# class TransformerDecoderBlock(nn.Module):
+#     def __init__(self, embed_dim, num_heads):
+#         super().__init__()
+#         self.masked_self_attn = MultiHeadSelfAttention(embed_dim, num_heads)
+#         self.cross_attn = MultiHeadSelfAttention(embed_dim, num_heads)
+#         self.ffn = nn.Sequential(
+#             nn.Linear(embed_dim, embed_dim * 4),
+#             nn.ReLU(),
+#             nn.Linear(embed_dim * 4, embed_dim),
+#         )
+#         self.norm1 = nn.LayerNorm(embed_dim)
+#         self.norm2 = nn.LayerNorm(embed_dim)
+#         self.norm3 = nn.LayerNorm(embed_dim)
+
+#     def forward(self, x, encoder_output, mask=None):
+#         # Masked self-attention (decoder attends to previous tokens only)
+#         attn1 = self.masked_self_attn(x, mask=mask)
+#         x = self.norm1(x + attn1)
+
+#         # Cross-attention (decoder attends to encoder output)
+#         attn2 = self.cross_attn(query=x, key=encoder_output, value=encoder_output)
+#         x = self.norm2(x + attn2)
+
+#         # Feed-forward network
+#         ffn_out = self.ffn(x)
+#         x = self.norm3(x + ffn_out)
+
+#         return x
+
+
+# class Decoder(nn.Module):
+#     def __init__(self, embed_dim, num_heads, num_layers, vocab_size):
+#         super().__init__()
+#         # Fix typo: nn.Embedding (capital E), and correct parameter name
+#         self.token_embedding = nn.Embedding(vocab_size, embed_dim)  # Embedding layer for input tokens
+        
+#         # Create decoder layers stack
+#         self.layers = nn.ModuleList([
+#             TransformerDecoderBlock(embed_dim, num_heads)
+#             for i in range(num_layers)
+#         ])
+
+#     def forward(self, x, encoder_output, mask):
+#         # x is token IDs: embed them first
+#         x = self.token_embedding(x)  # Now x shape: [batch_size, seq_len, embed_dim]
+
+#         # Pass through each decoder block
+#         for layer in self.layers:
+#             x = layer(x, encoder_output, mask)
+#         return x
+
+# class ImageCaptioningTransformer(nn.Module):
+#     def __init__(self, embed_dim, num_heads, num_encoder_layers, num_decoder_layers, vocab_size, patch_dim, num_patches):
+#         super().__init__()
+
+#         # Patch embedding + positional encoding
+#         self.patch_embedder = PatchEmbedder(patch_dim, embed_dim, num_patches)
+
+#         # Encoder stack
+#         self.encoder = Encoder(embed_dim, num_heads, num_encoder_layers)
+
+#         # Decoder stack
+#         self.decoder = Decoder(embed_dim, num_heads, num_decoder_layers, vocab_size)
+#         # Final linear layer to predict tokens
+#         self.output_linear = nn.Linear(embed_dim, vocab_size)
+
+#     def forward(self, image_patches, caption_tokens, caption_mask):
+#         # Embed image patches and add positional encoding
+#         encoder_input = self.patch_embedder(image_patches)
+
+#         # Pass through encoder
+#         encoder_output = self.encoder(encoder_input)
+
+#         # Pass through decoder with encoder output and mask
+#         decoder_output = self.decoder(caption_tokens, encoder_output, caption_mask)
+
+#         # Project decoder output to vocabulary logits
+#         logits = self.output_linear(decoder_output)
+
+#         return logits
+
+
+
+# class PatchTransformerClassifier(nn.Module):
+#     def __init__(self, patch_dim=49, num_patches=16, embed_dim=128, num_heads=4, num_layers=2, num_classes=10, dropout=0.1):
+#         super().__init__()
+#         # Linear layer to embed each patch
+#         self.patch_embed = nn.Linear(patch_dim, embed_dim)
+#         # Positional encoding for patch order
+#         self.pos_embed = nn.Parameter(torch.zeros(1, num_patches, embed_dim))
+#         # Transformer encoder
+#         encoder_layer = nn.TransformerEncoderLayer(
+#             d_model=embed_dim,
+#             nhead=num_heads,
+#             dim_feedforward=embed_dim * 2,
+#             dropout=dropout,
+#             batch_first=True
+#         )
+#         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+#         # Classification head
+#         self.classifier = nn.Linear(embed_dim, num_classes)
+
+#     def forward(self, x):
+#         # x: [batch_size, num_patches, patch_dim]
+#         x = self.patch_embed(x)  # [batch_size, num_patches, embed_dim]
+#         x = x + self.pos_embed   # Add positional encoding
+#         x = self.transformer(x)  # [batch_size, num_patches, embed_dim]
+#         x = x.mean(dim=1)        # Global average pooling over patches
+#         logits = self.classifier(x)  # [batch_size, num_classes]
+#         return logits
+
+
+
+# Example usage:
+# model = PatchTransformerClassifier()
+# outputs = model(patches)  # patches: [batch_size, 16, 49]
+# print(f"Model output shape: {outputs.shape}")  # [batch_size, 10]
+
+# [batch_size, channels, height, width]
+#    (0th)       (1st)     (2nd)   (3rd)
+
+# 0: Batch size → how many images at once (e.g. 64)
+
+# 1: Channels → 1 for grayscale (MNIST), 3 for RGB
+
+# 2: Height → vertical size of each image
+
+# 3: Width → horizontal size of each image
+
+
+
+
+
+
+# classifierHead
+
+
+# VisionTransformerModel
+
+
+
+
+
+
+# 1. Compute Query (Q), Key (K), and Value (V) matrices
+#    - Multiply input by learned weight matrices to get Q, K, V
+#    - For multi-head attention, compute separate Q₁...Qₕ, K₁...Kₕ, V₁...Vₕ for each head
+
+
+
+# 2. Calculate compatibility matrix by multiplying Q and Kᵀ
+#    - Resulting matrix shape: [sequence_length, sequence_length] (image patches compared with each other)
+
+# 3. Scale compatibility matrix by dividing by sqrt(d_k) to stabilize gradients
+
+# 4. Apply softmax to normalize compatibility matrix, producing attention weights
+#    - Attention weights shape: [batch_size, num_heads, num_patches, num_patches]
+
+# 5. Multiply attention weights by Value (V) matrix to get output context matrix
+
+# 6. Use multiple attention heads instead of a single one
+#    - Allows model to capture different relationships in the data simultaneously
+#    - Each head has its own set of Q, K, V matrices
+
+# 7. Concatenate outputs from all heads (context matrices) into a single matrix
+#    - Concatenated shape: [sequence_length, d_model]
+
+# 8. Multiply concatenated matrix by a learned weight matrix W_o
+#    - Produces the final output of the multi-head attention layer
+
+# Notes:
+# - Number of heads (h) is a hyperparameter, commonly set to 8
+# - Q, K, V matrices are learned during training via their weight matrices
+
+
+# inside a transofrmer 
+    # embedding - input borekn in little pieces
+    # attention - sequence of vecotrs pass along in an attnetion block 
+    # MLPs - the vectors dont talk to each other, asking a long list of question to a vecotr and then updatinng depedning on their answer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class MultiHeadSelfAttention(nn.Module):
+    def __init__(self, embed_dim, num_heads):
+        super().__init__()
+        self.embed_dim = embed_dim              # Total embedding dimension of the model (e.g., 128)
+        self.num_heads = num_heads              # Number of attention heads (e.g., 4 or 8)
+        self.head_dim = embed_dim // num_heads  # Dimension of each attention head (e.g., 128 / 4 = 32)
+
+        # 🧠 Linear layers for projecting input into multi-head Q, K, V spaces
+        # These create the queries, keys, and values for *all* heads in one go
+        self.q_proj = nn.Linear(embed_dim, embed_dim)  # Projects to all Q vectors
+        self.k_proj = nn.Linear(embed_dim, embed_dim)  # Projects to all K vectors
+        self.v_proj = nn.Linear(embed_dim, embed_dim)  # Projects to all V vectors
+
+        # 🎯 Linear layer to combine all heads back into one output after attention
+        self.out_proj = nn.Linear(embed_dim, embed_dim)
+
+    def forward(self, x, mask=None):    # 'x' is the input data for this part of the model.
+                                        # It’s the image patches turned into numbers.
+        print("Shape of x in MultiHeadSelfAttention:", x.shape)  # <--- Add this here
+        batch_size, seq_len, embed_dim = x.size()  # This line expects x to have 3 dims
+
+
+        # 🔄 Step 1: Project input x into Q, K, V vectors
+        # Shape after projection: [batch_size, seq_len, embed_dim]
+        Q = self.q_proj(x)
+        K = self.k_proj(x)
+        V = self.v_proj(x)
+
+        # 🪓 Step 2: Reshape and split into multiple heads
+        # Each head gets its slice of the full embedding
+        # After reshape: [batch_size, num_heads, seq_len, head_dim]
+        Q = Q.view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
+        K = K.view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
+        V = V.view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
+
+        # 🧮 Step 3: Compute scaled dot-product attention for each head
+        # Q x K^T: similarity between tokens
+        # Resulting scores shape: [batch_size, num_heads, seq_len, seq_len]
+        scores = torch.matmul(Q, K.transpose(-2, -1)) / (self.head_dim ** 0.5)
+
+        if mask is not None:
+         # mask shape should broadcast to scores shape: [batch, heads, seq_len, seq_len]
+            scores = scores.masked_fill(mask == 0, float('-inf'))
+
+        # 🔥 Step 4: Apply softmax to getf attention weights
+        # Softmax normalizes attention scores to probabilities
+        attention_weights = F.softmax(scores, dim=-1)
+
+        # 📦 Step 5: Weighted sum of values using attention weights
+        # Shape: [batch_size, num_heads, seq_len, head_dim]
+        context = torch.matmul(attention_weights, V)
+
+        # 🧷 Step 6: Concatenate all heads back together
+        # Transpose and reshape: [batch_size, seq_len, embed_dim]
+        context = context.transpose(1, 2).contiguous().view(batch_size, seq_len, embed_dim)
+
+        # 🎯 Step 7: Final linear projection after multi-head attention
+        # This mixes the information across heads
+        output = self.out_proj(context)
+       
+    
+        return output  # shape: [batch_size, seq_len, embed_dim]
+
+
+
+class Encoder(nn.Module):
+    def __init__(self, embed_dim, num_heads, num_layers):
+        super().__init__()
+        self.layers = nn.ModuleList([
+            TransformerEncoderBlock(embed_dim, num_heads)
+            for i in range(num_layers)
+        ])
+
+    def forward(self, x):
+        for layer in self.layers:
+            x = layer(x)
+        return x
+
+
+
+
+
+class PatchEmbedClassifier(nn.Module):
+    def __init__(self, patch_embedder, embed_dim=128, num_classes=10):
+        super().__init__()
+        self.patch_embedder = patch_embedder
+        self.classifier = nn.Linear(embed_dim, num_classes)
+
+    def forward(self, x):
+        embeddings = self.patch_embedder(x)        # [batch_size, num_patches, embed_dim]
+        pooled = embeddings.mean(dim=1)            # average over patches → [batch_size, embed_dim]
+        logits = self.classifier(pooled)           # predict digit class → [batch_size, num_classes]
+        return logits
+
