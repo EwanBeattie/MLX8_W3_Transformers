@@ -1,0 +1,6 @@
+torch
+torchvision
+matplotlib
+sentencepiece
+wandb
+tqdm
