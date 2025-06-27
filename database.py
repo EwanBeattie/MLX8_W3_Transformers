@@ -4,7 +4,7 @@ import numpy as np
 
 class Database():
     def __init__(self):
-        self.engine = create_engine('postgresql://donation@localhost/mlx')
+        self.engine = create_engine('postgresql://donation@db/mlx')
 
     def save_row(self, input_tensor, prediction, true_label):
         with self.engine.connect() as conn:
@@ -24,8 +24,3 @@ class Database():
             conn.execute(text("DELETE FROM mnist_logs"))
             conn.commit()
         
-
-database = Database()
-
-# data = database.retrieve_rows()
-database.delete_all_rows()
