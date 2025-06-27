@@ -1,0 +1,12 @@
+__pycache__/
+.venv/
+a_redundant/
+ChatGPTVersion/
+data/
+wandb/
+.gitignore
+data.py
+git_push.sh
+train.py
+*.ipynb
+.git

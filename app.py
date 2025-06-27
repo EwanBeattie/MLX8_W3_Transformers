@@ -10,6 +10,11 @@ from types import SimpleNamespace
 from configs import hyperparameters
 import data
 from math import sqrt
+from database import Database
+
+# Initialise database connection
+database = Database()
+
 
 # Load trained model
 config = SimpleNamespace(**hyperparameters)
@@ -56,6 +61,10 @@ if "pred" not in st.session_state:
     st.session_state.pred = None
 if "confidence" not in st.session_state:
     st.session_state.confidence = None
+if "input_tensor" not in st.session_state:
+    st.session_state.input_tensor = None
+
+input_tensor = None
 
 # Button and prediction logic
 if st.button("🧠 Predict"):
@@ -72,6 +81,7 @@ if st.button("🧠 Predict"):
         st.session_state.pred = pred
         st.session_state.confidence = confidence
         st.session_state.predicted = True
+        st.session_state.input_tensor = input_tensor.squeeze(0).squeeze(0)
     else:
         st.warning("Please draw a digit before submitting.")
 
@@ -83,25 +93,11 @@ if st.session_state.predicted:
     pred_placeholder.success(f"**Prediction:** {st.session_state.pred}")
     conf_placeholder.info(f"**Confidence:** {st.session_state.confidence:.2%}")
 
-    true_label = input_placeholder.text_input(
-        "True Label:",
-        max_chars=1,
-        key="true_label_input",
-        label_visibility="visible"
-    )
-
-    # Autofocus the input box
-    st.markdown(
-        """
-        <script>
-        const input = window.parent.document.querySelector('input[data-testid="stTextInput"][aria-label="True Label:"]');
-        if (input) { input.focus(); }
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
-
+    true_label = input_placeholder.text_input("True Label:", max_chars=1)
     if true_label:
+        # Save data to database
+        database.save_row(st.session_state.input_tensor, st.session_state.pred, true_label)
+
         st.write(f"✅ Thanks! You entered: **{true_label}**")
         st.session_state.predicted = False
         pred_placeholder.empty()

@@ -6,3 +6,5 @@ wandb
 streamlit
 streamlit_drawable_canvas
 tqdm
+sqlalchemy
+psycopg2-binary
