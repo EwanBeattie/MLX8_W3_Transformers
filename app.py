@@ -5,21 +5,16 @@ import torchvision.transforms as transforms
 from PIL import Image
 import numpy as np
 from models import Transformer  
-import matplotlib.pyplot as plt
 from types import SimpleNamespace
 from configs import hyperparameters
-import data
 from math import sqrt
 from database import Database
 
 # Initialise database connection
 database = Database()
 
-
 # Load trained model
 config = SimpleNamespace(**hyperparameters)
-
-train_loader, test_loader = data.get_mnist_data(batch_size=config.batch_size)
 
 # Initialise the model
 model = Transformer(

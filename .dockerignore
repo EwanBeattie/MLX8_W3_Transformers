@@ -10,3 +10,4 @@ git_push.sh
 train.py
 *.ipynb
 .git
+maria/

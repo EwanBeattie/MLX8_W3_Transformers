@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: donation
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mlx
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  streamlit:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://donation:password@db/mlx
+    ports:
+      - "8501:8501"
+    restart: always
+
+volumes:
+  pgdata:
